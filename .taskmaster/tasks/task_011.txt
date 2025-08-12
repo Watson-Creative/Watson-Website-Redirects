@@ -1,0 +1,12 @@
+# Task ID: 11
+# Title: KV namespace and loader script
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Provision KV namespace and implement loader to import `out/redirects_kv.json`.
+# Details:
+- `wrangler.toml` config for KV.
+- CLI script to diff and upsert KV entries; idempotent; supports dry-run.
+
+# Test Strategy:
+Preview env test: load sample data, verify lookups; ensure dry-run mode.

@@ -1,0 +1,12 @@
+# Task ID: 18
+# Title: Runbook: Webflow import and locale duplication steps
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Create documentation for Webflow 301 rules import, rule order, `%` escaping, and locale duplication safety steps; include verification checklist.
+# Details:
+- Include spot-check examples and publish verification steps.
+- Notes on special characters and backrefs.
+
+# Test Strategy:
+Doc review checklist; validate process in a dry run.

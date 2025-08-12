@@ -1,0 +1,12 @@
+# Task ID: 17
+# Title: Observability and monitoring workflow
+# Status: pending
+# Dependencies: None
+# Priority: low
+# Description: Implement logging in Worker and a weekly export of top misses to seed new KV entries.
+# Details:
+- `wrangler tail` usage docs and scripts.
+- Aggregate logs to CSV; identify high-volume misses for review.
+
+# Test Strategy:
+Dry-run validation and script output checks.

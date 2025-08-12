@@ -1,0 +1,12 @@
+# Task ID: 8
+# Title: 410_GONE and ignore_404 lists
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Maintain first-class lists for intentional retirements and junk/spam URLs. Generate `out/redirects_gone_410.txt` and `out/ignore_404.txt`.
+# Details:
+- Provide `config/410_gone.txt` and `config/ignore_404.txt` as sources.
+- Ensure Worker treats 410 list with precedence and preserves other logic for ignore list.
+
+# Test Strategy:
+Unit tests and worker dry-run coverage for 410 vs 404 behaviors.

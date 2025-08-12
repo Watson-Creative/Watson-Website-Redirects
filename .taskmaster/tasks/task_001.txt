@@ -1,0 +1,14 @@
+# Task ID: 1
+# Title: Project setup for redirect pipeline (Node/TypeScript + Cloudflare Workers)
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Initialize a Node/TypeScript workspace for the redirect synthesis pipeline and Cloudflare Worker. Establish directories: `src/`, `out/`, `config/`, and test structure. Decide package manager and baseline tsconfig, linting, and scripts.
+# Details:
+- Initialize `package.json`, `tsconfig.json`, and linting.
+- Create `src/` for pipeline and `worker/` for Cloudflare Worker.
+- Add scripts: `build`, `test`, `generate`, `worker:dev`, `worker:deploy`, `kv:load`.
+- Ensure reproducible setup documented in README.
+
+# Test Strategy:
+Build succeeds; baseline test passes; scripts execute without error.

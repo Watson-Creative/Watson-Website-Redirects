@@ -1,0 +1,13 @@
+# Task ID: 6
+# Title: Similarity-based exception proposal engine
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: For unmatched old paths, propose best targets by section-limited token similarity (e.g., hyphen-token Jaccard). Output proposals for human review.
+# Details:
+- Tokenize slugs by hyphen, compute similarity within section.
+- Threshold to set `confidence` and `needs_review`.
+- Do not use at runtime; only for KV exception proposals.
+
+# Test Strategy:
+Unit tests for scoring; verify threshold behavior; golden tests on sample pairs.

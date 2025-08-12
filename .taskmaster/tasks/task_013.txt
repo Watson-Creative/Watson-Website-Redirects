@@ -1,0 +1,12 @@
+# Task ID: 13
+# Title: Query preservation and host normalization tests
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Ensure query strings preserved end-to-end and apex/non-www redirect to `www.watsoncreative.com`.
+# Details:
+- Tests for `Location` header retaining original query.
+- Tests for host normalization without path/query loss.
+
+# Test Strategy:
+Worker preview tests and integration assertions.

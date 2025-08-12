@@ -1,0 +1,12 @@
+# Task ID: 14
+# Title: Unit test suite
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Add unit tests for normalization, folder-rule application, similarity scoring, loop detection, and self-redirect guard.
+# Details:
+- Cover edge cases and representative samples.
+- Ensure high coverage for core functions.
+
+# Test Strategy:
+Run in CI; enforce coverage threshold; green on all tests.

@@ -1,0 +1,12 @@
+# Task ID: 19
+# Title: Rollback plan and procedures
+# Status: pending
+# Dependencies: None
+# Priority: low
+# Description: Document rollback steps for Webflow redirects, Worker, and KV datasets; include disabling routes fallback.
+# Details:
+- Versioning strategy for KV and Worker.
+- One-click route disable steps and re-import of Webflow rules.
+
+# Test Strategy:
+Tabletop exercise; validate commands and steps.

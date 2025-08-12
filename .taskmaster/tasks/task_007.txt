@@ -1,0 +1,13 @@
+# Task ID: 7
+# Title: KV JSON schema and writer
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Emit `out/redirects_kv.json` as array of objects per PRD schema, for ingestion into Worker KV namespace.
+# Details:
+- Schema fields: `old_path`, `new_path`, `section`, `confidence`, `needs_review`.
+- Include only exact-match exceptions; exclude Webflow-eligible.
+- Add lightweight schema validation step.
+
+# Test Strategy:
+Schema validation tests and sample output snapshot.

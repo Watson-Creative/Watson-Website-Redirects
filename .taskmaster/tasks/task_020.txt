@@ -1,0 +1,12 @@
+# Task ID: 20
+# Title: Acceptance checklist and release
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Compile an acceptance checklist aligned with PRD success criteria and prepare release steps.
+# Details:
+- Checklist items: zero 404s or documented, chain ≤2, all 301, queries preserved, no loops, locale safety.
+- Final sign-off and release notes.
+
+# Test Strategy:
+PM/SEO review against checklist; green tests and dry-run logs.

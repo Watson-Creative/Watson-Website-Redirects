@@ -1,0 +1,13 @@
+# Task ID: 5
+# Title: Webflow eligibility detection and CSV export
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Mark candidates whose targets exist in live site as Webflow-eligible; export `out/redirects_webflow.csv` with `old_path,new_path`.
+# Details:
+- Validate candidate targets against live set.
+- Apply Webflow escaping in Old path only; preserve `%1` backrefs.
+- Order rules with generic folder rules at top and explicit page rules below.
+
+# Test Strategy:
+Integration test compares count of eligible rules and validates CSV headers and sample rows.

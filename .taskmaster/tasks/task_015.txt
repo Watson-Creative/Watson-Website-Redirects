@@ -1,0 +1,12 @@
+# Task ID: 15
+# Title: Integration tests and generation pipeline
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Generate all artifacts under `out/` and assert sitemap count parity, Webflow eligibility, and valid KV schema; dry-run Worker in preview.
+# Details:
+- Single command `npm run generate` to orchestrate pipeline.
+- Preview Worker route locally; verify KV hits, regex rule hits, 410 handling, and no loops.
+
+# Test Strategy:
+Integration test harness validates outputs and dry-run behaviors.

@@ -1,0 +1,293 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Project setup for redirect pipeline (Node/TypeScript + Cloudflare Workers)",
+        "description": "Initialize a Node/TypeScript workspace for the redirect synthesis pipeline and Cloudflare Worker. Establish directories: `src/`, `out/`, `config/`, and test structure. Decide package manager and baseline tsconfig, linting, and scripts.",
+        "details": "- Initialize `package.json`, `tsconfig.json`, and linting.\n- Create `src/` for pipeline and `worker/` for Cloudflare Worker.\n- Add scripts: `build`, `test`, `generate`, `worker:dev`, `worker:deploy`, `kv:load`.\n- Ensure reproducible setup documented in README.",
+        "testStrategy": "Build succeeds; baseline test passes; scripts execute without error.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Sitemap ingest: old site XML and live Webflow sitemap (follow indexes and hreflang)",
+        "description": "Implement XML sitemap ingestion for old site (`_data/oldsite/*.xml`) and live site (`https://www.watsoncreative.com/sitemap.xml`). Follow nested indexes and parse hreflang when present.",
+        "details": "- Parse multiple sitemap files under `_data/oldsite/`.\n- Crawl live sitemap index and nested sitemaps; collect live paths; capture hreflang relationships.\n- Serialize ingested sets to `out/tmp_ingest_{old,live}.json` for debugging.",
+        "testStrategy": "Unit tests for parsing functions; integration assert count parity between file lists and ingested sets.",
+        "status": "pending",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "URL normalization utilities",
+        "description": "Create reusable functions to normalize paths: lowercase, collapse duplicate slashes, normalize trailing slash (except root), safe percent-decoding, diacritics folding, and query preservation.",
+        "details": "- Provide pure functions for normalization variants used in pipeline and Worker.\n- Add edge-case handling for encoded characters and spaces.\n- Ensure deterministic behavior with tests.",
+        "testStrategy": "Comprehensive unit tests for `é`, spaces, encoded characters, duplicate slashes, trailing slash, and query preservation.",
+        "status": "pending",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Folder-level remap rules config and engine",
+        "description": "Define canonical folder remap rules that preserve leaf slug (e.g., `/portfolio%-items/(.*)` → `/portfolio/%1`). Build application engine.",
+        "details": "- Create `config/folder-rules.json` for declarative patterns.\n- Implement engine to apply rules to old paths and output candidates.\n- Ensure Webflow-compatible escaping for Old path in CSV.",
+        "testStrategy": "Unit tests for applying rules; verify examples in PRD and edge cases; snapshot outputs.",
+        "status": "pending",
+        "dependencies": [
+          "3"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Webflow eligibility detection and CSV export",
+        "description": "Mark candidates whose targets exist in live site as Webflow-eligible; export `out/redirects_webflow.csv` with `old_path,new_path`.",
+        "details": "- Validate candidate targets against live set.\n- Apply Webflow escaping in Old path only; preserve `%1` backrefs.\n- Order rules with generic folder rules at top and explicit page rules below.",
+        "testStrategy": "Integration test compares count of eligible rules and validates CSV headers and sample rows.",
+        "status": "pending",
+        "dependencies": [
+          "2",
+          "4"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Similarity-based exception proposal engine",
+        "description": "For unmatched old paths, propose best targets by section-limited token similarity (e.g., hyphen-token Jaccard). Output proposals for human review.",
+        "details": "- Tokenize slugs by hyphen, compute similarity within section.\n- Threshold to set `confidence` and `needs_review`.\n- Do not use at runtime; only for KV exception proposals.",
+        "testStrategy": "Unit tests for scoring; verify threshold behavior; golden tests on sample pairs.",
+        "status": "pending",
+        "dependencies": [
+          "2",
+          "3",
+          "4"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "KV JSON schema and writer",
+        "description": "Emit `out/redirects_kv.json` as array of objects per PRD schema, for ingestion into Worker KV namespace.",
+        "details": "- Schema fields: `old_path`, `new_path`, `section`, `confidence`, `needs_review`.\n- Include only exact-match exceptions; exclude Webflow-eligible.\n- Add lightweight schema validation step.",
+        "testStrategy": "Schema validation tests and sample output snapshot.",
+        "status": "pending",
+        "dependencies": [
+          "6"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "410_GONE and ignore_404 lists",
+        "description": "Maintain first-class lists for intentional retirements and junk/spam URLs. Generate `out/redirects_gone_410.txt` and `out/ignore_404.txt`.",
+        "details": "- Provide `config/410_gone.txt` and `config/ignore_404.txt` as sources.\n- Ensure Worker treats 410 list with precedence and preserves other logic for ignore list.",
+        "testStrategy": "Unit tests and worker dry-run coverage for 410 vs 404 behaviors.",
+        "status": "pending",
+        "dependencies": [
+          "2"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Loop and long-chain detector",
+        "description": "Pre-deploy script that simulates redirects (Webflow rules and KV) to reject loops and chains > 2.",
+        "details": "- Simulate A→B→C following rules and KV.\n- Detect self-redirect and cycles; report offenders with path traces.\n- Fail CI if violations found.",
+        "testStrategy": "Unit tests with synthetic rule sets; integration test on generated outputs.",
+        "status": "pending",
+        "dependencies": [
+          "5",
+          "7",
+          "8"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Cloudflare Worker runtime: normalization, KV exceptions, 410, and caching",
+        "description": "Build the Worker handling host normalization, path normalization, KV exact matches, 410 handling, and self-redirect guard; cache 301 responses at edge.",
+        "details": "- Normalize host to `www.watsoncreative.com`.\n- Normalize path (lowercase, slashes, trailing slash, percent-decoding, diacritics) safely.\n- Lookup KV map for exact exceptions; otherwise fallthrough to origin/Webflow.\n- Guard against self-redirect; cache 301 via Cache API; log decision metadata.",
+        "testStrategy": "Worker unit tests and preview tests; ensure query preservation and caching works.",
+        "status": "pending",
+        "dependencies": [
+          "3",
+          "7",
+          "8"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "KV namespace and loader script",
+        "description": "Provision KV namespace and implement loader to import `out/redirects_kv.json`.",
+        "details": "- `wrangler.toml` config for KV.\n- CLI script to diff and upsert KV entries; idempotent; supports dry-run.",
+        "testStrategy": "Preview env test: load sample data, verify lookups; ensure dry-run mode.",
+        "status": "pending",
+        "dependencies": [
+          "10"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Localization safety and duplication",
+        "description": "When localization is enabled, duplicate folder rules and KV exceptions across locale prefixes without cross-locale mapping; reattach prefix post-map.",
+        "details": "- Parse hreflang sets and ensure no cross-locale matching.\n- Config flag to enable/disable localization duplication.\n- Extend exports and Worker handling for locale prefixes.",
+        "testStrategy": "Unit tests for locale duplication and isolation; integration check on sample hreflang data.",
+        "status": "pending",
+        "dependencies": [
+          "2",
+          "5",
+          "7"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Query preservation and host normalization tests",
+        "description": "Ensure query strings preserved end-to-end and apex/non-www redirect to `www.watsoncreative.com`.",
+        "details": "- Tests for `Location` header retaining original query.\n- Tests for host normalization without path/query loss.",
+        "testStrategy": "Worker preview tests and integration assertions.",
+        "status": "pending",
+        "dependencies": [
+          "10"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Unit test suite",
+        "description": "Add unit tests for normalization, folder-rule application, similarity scoring, loop detection, and self-redirect guard.",
+        "details": "- Cover edge cases and representative samples.\n- Ensure high coverage for core functions.",
+        "testStrategy": "Run in CI; enforce coverage threshold; green on all tests.",
+        "status": "pending",
+        "dependencies": [
+          "3",
+          "4",
+          "6",
+          "9",
+          "10"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Integration tests and generation pipeline",
+        "description": "Generate all artifacts under `out/` and assert sitemap count parity, Webflow eligibility, and valid KV schema; dry-run Worker in preview.",
+        "details": "- Single command `npm run generate` to orchestrate pipeline.\n- Preview Worker route locally; verify KV hits, regex rule hits, 410 handling, and no loops.",
+        "testStrategy": "Integration test harness validates outputs and dry-run behaviors.",
+        "status": "pending",
+        "dependencies": [
+          "2",
+          "5",
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "End-to-end curl suite and test matrix",
+        "description": "Produce `out/redirects_testmatrix.txt` and add scripts to batch curl and log results.",
+        "details": "- Generate matrix from old paths and notable cases.\n- Batch run with xargs; capture logs to `out/testlog.txt`.",
+        "testStrategy": "Manual and automated checks confirm ≤2 hops, all 301, final 200, and query preserved.",
+        "status": "pending",
+        "dependencies": [
+          "15"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Observability and monitoring workflow",
+        "description": "Implement logging in Worker and a weekly export of top misses to seed new KV entries.",
+        "details": "- `wrangler tail` usage docs and scripts.\n- Aggregate logs to CSV; identify high-volume misses for review.",
+        "testStrategy": "Dry-run validation and script output checks.",
+        "status": "pending",
+        "dependencies": [
+          "10",
+          "11"
+        ],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Runbook: Webflow import and locale duplication steps",
+        "description": "Create documentation for Webflow 301 rules import, rule order, `%` escaping, and locale duplication safety steps; include verification checklist.",
+        "details": "- Include spot-check examples and publish verification steps.\n- Notes on special characters and backrefs.",
+        "testStrategy": "Doc review checklist; validate process in a dry run.",
+        "status": "pending",
+        "dependencies": [
+          "5"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Rollback plan and procedures",
+        "description": "Document rollback steps for Webflow redirects, Worker, and KV datasets; include disabling routes fallback.",
+        "details": "- Versioning strategy for KV and Worker.\n- One-click route disable steps and re-import of Webflow rules.",
+        "testStrategy": "Tabletop exercise; validate commands and steps.",
+        "status": "pending",
+        "dependencies": [
+          "10",
+          "11"
+        ],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Acceptance checklist and release",
+        "description": "Compile an acceptance checklist aligned with PRD success criteria and prepare release steps.",
+        "details": "- Checklist items: zero 404s or documented, chain ≤2, all 301, queries preserved, no loops, locale safety.\n- Final sign-off and release notes.",
+        "testStrategy": "PM/SEO review against checklist; green tests and dry-run logs.",
+        "status": "pending",
+        "dependencies": [
+          "15",
+          "16",
+          "17",
+          "18",
+          "19"
+        ],
+        "priority": "high",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-12T20:42:55.957Z",
+      "description": "Default tasks context",
+      "updated": "2025-08-12T20:44:14.487Z"
+    }
+  }
+}

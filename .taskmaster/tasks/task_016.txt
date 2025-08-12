@@ -1,0 +1,12 @@
+# Task ID: 16
+# Title: End-to-end curl suite and test matrix
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Produce `out/redirects_testmatrix.txt` and add scripts to batch curl and log results.
+# Details:
+- Generate matrix from old paths and notable cases.
+- Batch run with xargs; capture logs to `out/testlog.txt`.
+
+# Test Strategy:
+Manual and automated checks confirm ≤2 hops, all 301, final 200, and query preserved.

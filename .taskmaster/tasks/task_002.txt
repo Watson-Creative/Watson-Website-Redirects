@@ -1,0 +1,13 @@
+# Task ID: 2
+# Title: Sitemap ingest: old site XML and live Webflow sitemap (follow indexes and hreflang)
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Implement XML sitemap ingestion for old site (`_data/oldsite/*.xml`) and live site (`https://www.watsoncreative.com/sitemap.xml`). Follow nested indexes and parse hreflang when present.
+# Details:
+- Parse multiple sitemap files under `_data/oldsite/`.
+- Crawl live sitemap index and nested sitemaps; collect live paths; capture hreflang relationships.
+- Serialize ingested sets to `out/tmp_ingest_{old,live}.json` for debugging.
+
+# Test Strategy:
+Unit tests for parsing functions; integration assert count parity between file lists and ingested sets.

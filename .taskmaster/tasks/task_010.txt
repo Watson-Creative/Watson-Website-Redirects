@@ -1,0 +1,14 @@
+# Task ID: 10
+# Title: Cloudflare Worker runtime: normalization, KV exceptions, 410, and caching
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Build the Worker handling host normalization, path normalization, KV exact matches, 410 handling, and self-redirect guard; cache 301 responses at edge.
+# Details:
+- Normalize host to `www.watsoncreative.com`.
+- Normalize path (lowercase, slashes, trailing slash, percent-decoding, diacritics) safely.
+- Lookup KV map for exact exceptions; otherwise fallthrough to origin/Webflow.
+- Guard against self-redirect; cache 301 via Cache API; log decision metadata.
+
+# Test Strategy:
+Worker unit tests and preview tests; ensure query preservation and caching works.

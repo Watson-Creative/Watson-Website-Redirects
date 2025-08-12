@@ -1,0 +1,13 @@
+# Task ID: 12
+# Title: Localization safety and duplication
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: When localization is enabled, duplicate folder rules and KV exceptions across locale prefixes without cross-locale mapping; reattach prefix post-map.
+# Details:
+- Parse hreflang sets and ensure no cross-locale matching.
+- Config flag to enable/disable localization duplication.
+- Extend exports and Worker handling for locale prefixes.
+
+# Test Strategy:
+Unit tests for locale duplication and isolation; integration check on sample hreflang data.

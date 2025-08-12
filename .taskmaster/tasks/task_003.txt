@@ -1,0 +1,13 @@
+# Task ID: 3
+# Title: URL normalization utilities
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Create reusable functions to normalize paths: lowercase, collapse duplicate slashes, normalize trailing slash (except root), safe percent-decoding, diacritics folding, and query preservation.
+# Details:
+- Provide pure functions for normalization variants used in pipeline and Worker.
+- Add edge-case handling for encoded characters and spaces.
+- Ensure deterministic behavior with tests.
+
+# Test Strategy:
+Comprehensive unit tests for `é`, spaces, encoded characters, duplicate slashes, trailing slash, and query preservation.

@@ -1,0 +1,13 @@
+# Task ID: 9
+# Title: Loop and long-chain detector
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Pre-deploy script that simulates redirects (Webflow rules and KV) to reject loops and chains > 2.
+# Details:
+- Simulate A→B→C following rules and KV.
+- Detect self-redirect and cycles; report offenders with path traces.
+- Fail CI if violations found.
+
+# Test Strategy:
+Unit tests with synthetic rule sets; integration test on generated outputs.

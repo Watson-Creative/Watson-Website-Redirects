@@ -1,0 +1,176 @@
+<context>
+# Overview  
+Watson Smart Redirects ensures legacy WordPress URLs map cleanly to the new Webflow site without losing SEO or user traffic. The product guarantees that no legacy URL lands on a 404 and that all redirect chains resolve quickly to live content on `www.watsoncreative.com`. It is built for site visitors, search crawlers, and internal links that still reference old paths. Value is measured by complete coverage of legacy URLs, minimal redirect hops, and strict preservation of query strings. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1}
+
+# Core Features
+
+1. Canonical folder remaps
+
+* What it does: Remaps whole folders while preserving leaf slugs, with normalization of case, duplicate slashes, and trailing slash variants.
+* Why it matters: Covers the majority of predictable structural changes in one rule set and reduces manual exception lists.
+* How it works: Webflow 301 rules implement patterns like `/portfolio%-items/(.*)` to `/portfolio/%1`, applied in the right order.&#x20;
+
+2. Exact-match exceptions via Worker KV
+
+* What it does: Stores explicit old-to-new slug pairs for renamed pages.
+* Why it matters: Handles precise cases that a folder remap cannot capture.
+* How it works: The Worker reads from KV using a defined JSON schema and preserves query strings at runtime. &#x20;
+
+3. Content decommission policy
+
+* What it does: Returns HTTP 410 for intentionally retired content.
+* Why it matters: Signals permanent removal to crawlers and avoids misleading redirects.
+* How it works: A curated `410_GONE` list is enforced by the Worker.&#x20;
+
+4. Localization and safety rails
+
+* What it does: Duplicates rules per locale prefix and prevents cross-locale mappings.
+* Why it matters: Avoids misrouting and preserves correct language targeting.
+* How it works: Locale prefixes are reattached after mapping and hreflang data is respected when enabled.&#x20;
+
+5. Host normalization
+
+* What it does: Forces apex and non-www hosts to `www.watsoncreative.com` without losing path or query.
+* Why it matters: Consolidates signals and prevents split indexation.
+* How it works: Implemented in the Worker before other routing.&#x20;
+
+6. Tricky URL normalization
+
+* What it does: Normalizes percent-encodings, diacritics, spaces, case, duplicate slashes, and trailing slashes.
+* Why it matters: Reduces mismatch between legacy inputs and live paths.
+* How it works: Worker-side normalization utilities plus unit tests for `é`, spaces, and encoded characters.&#x20;
+
+7. Rule synthesis pipeline
+
+* What it does: Generates Webflow-eligible rules and KV candidates from old and live sitemaps.
+* Why it matters: Produces import files and a test matrix with coverage checks.
+* How it works: Parses `_data/oldsite/*.xml` and live sitemap, normalizes, applies folder rules, flags Webflow-eligible targets, and proposes human-reviewed matches for KV.&#x20;
+
+8. Safety checks against loops and long chains
+
+* What it does: Prevents A→B→A loops and chains longer than two hops.
+* Why it matters: Protects performance and crawl budget.
+* How it works: Pre-deploy simulator plus Worker guard before issuing a 301.&#x20;
+
+9. Performance and caching
+
+* What it does: Caches successful 301s at the edge with a sub-50 ms target.
+* Why it matters: Keeps redirects fast under load.
+* How it works: Worker Cache API with KV as the source of truth for exceptions. &#x20;
+
+10. Observability and rollout monitoring
+
+* What it does: Logs decisions and exports weekly top misses to seed exceptions.
+* Why it matters: Enables fast iteration and rollback if issues appear.
+* How it works: Cloudflare Analytics, `wrangler tail`, and CSV exports of misses.&#x20;
+
+11. Webflow import discipline
+
+* What it does: Keeps generic folder rules above specific page rules and verifies before publishing.
+* Why it matters: Webflow applies rules top-to-bottom and only after publish.
+* How it works: Follow order, escape requirements, and spot-checks before and after publish. &#x20;
+
+12. Search Console hygiene
+
+* What it does: Submits sitemaps, annotates migration, and monitors Not Found reports.
+* Why it matters: Validates KPIs and reveals regressions.
+* How it works: Routine checks post-migration.&#x20;
+
+  </context>
+
+<PRD>
+# Technical Architecture  
+- System components  
+  - Cloudflare Worker in front of Webflow for normalization, host routing, exceptions, 410 handling, caching, logging, and safety guards. Webflow 301 engine handles folder-level rules. :contentReference[oaicite:17]{index=17}  
+- Data models  
+  - KV entry schema for exact slug exceptions with `old_path`, `new_path`, `section`, `confidence`, and `needs_review`. :contentReference[oaicite:18]{index=18}  
+- Data sources  
+  - Old URLs from `_data/oldsite/*.xml`. Live URLs from the public sitemap, including nested indexes. :contentReference[oaicite:19]{index=19}  
+- Processing and routing flow  
+  - Normalize input path, check 410 list, check KV, then fall through to Webflow 301s, ensure no self-redirect, and emit final 301 to a terminal 200 within two hops. :contentReference[oaicite:20]{index=20} :contentReference[oaicite:21]{index=21}  
+- Caching and performance  
+  - Cache positive 301s at edge, with a target redirect latency under 50 ms. :contentReference[oaicite:22]{index=22} :contentReference[oaicite:23]{index=23}  
+- Observability  
+  - Log old path, decision type, target, status, and timing. Export weekly top misses. :contentReference[oaicite:24]{index=24}  
+- APIs and integrations  
+  - Webflow 301 UI import for CSV. Google Search Console for monitoring. Cloudflare Analytics and CLI for deploy observability. :contentReference[oaicite:25]{index=25} :contentReference[oaicite:26]{index=26}
+
+# Development Roadmap
+
+* MVP scope
+
+  * Host normalization and Worker fronting.
+  * Canonical folder remaps and Webflow CSV output.
+  * KV loader with minimal schema.
+  * Basic normalization utilities for case, slashes, and trailing slash.
+  * Loop detector and self-redirect guard.
+  * Test matrix and end-to-end curl checks.
+  * Acceptance checks for 200 within two hops and query preservation.    &#x20;
+* Future enhancements
+
+  * Full diacritic and percent-decoding normalization with unit tests.
+  * Localization duplication and hreflang-aware comparisons.
+  * Edge caching optimization and expanded analytics exports.
+  * 410 policy list with governance notes.
+  * Search Console hygiene and regression monitoring.    &#x20;
+
+# Logical Dependency Chain
+
+1. Foundation
+
+* Put the Worker in front of Webflow and enforce host normalization and self-redirect guard.
+* Implement canonical folder remaps and import them first with correct ordering in Webflow. &#x20;
+
+2. Make it visible and usable quickly
+
+* Generate and import `redirects_webflow.csv` to cover bulk mappings.
+* Add KV exceptions for high-traffic renamed slugs.
+* Ship test matrix and run curl checks to prove end-to-end behavior.  &#x20;
+
+3. Layer safety and quality
+
+* Add loop detection, normalization utilities, and 410 governance.
+* Add localization duplication and hreflang parsing when enabled.
+* Turn on edge caching and analytics exports.  &#x20;
+
+# Risks and Mitigations
+
+* Webflow constraints and rule ordering
+
+  * Risk: Characters that require escaping, lack of cross-locale auto-apply, conflicts with existing slugs.
+  * Mitigation: Pre-escape Old paths, group generic rules first, verify before and after publish.&#x20;
+* Locale duplication gaps
+
+  * Risk: Missing per-locale rules or accidental cross-locale targets.
+  * Mitigation: Automated duplication and hreflang-aware checks.&#x20;
+* Chains or loops beyond two hops
+
+  * Risk: Crawl inefficiency and user latency.
+  * Mitigation: Pre-deploy simulator and Worker guard.&#x20;
+* Figuring out the smallest viable slice for rollout
+
+  * Risk: Overbuilding before validation.
+  * Mitigation: Ship Worker fronting, folder remaps, and a small KV set first, then iterate with analytics-driven additions. &#x20;
+
+# Appendix
+
+* Outputs for implementation
+
+  * `out/redirects_webflow.csv`, `out/redirects_kv.json`, `out/redirects_testmatrix.txt`, `out/redirects_gone_410.txt`, `out/ignore_404.txt`.&#x20;
+* Deliverables
+
+  * Import-ready CSV, KV dataset, test artifacts, runbook, and the PRD.&#x20;
+* Acceptance criteria
+
+  * Legacy URL resolves to final 200 within two hops or is intentionally 410 or ignored with rationale. All hops are 301 and query strings preserved. No locale misrouting and no loops.&#x20;
+* Test plan
+
+  * Unit, integration, and end-to-end curl suites, including negative tests for 410 and ignore lists.&#x20;
+* Rollback plan
+
+  * Export and restore Webflow rules, keep a versioned KV namespace, revert Worker, and disable Worker routes during rollback.&#x20;
+* References
+
+  * Webflow 301 docs and escaping, diacritics note, sitemap and hreflang, Cloudflare Workers redirect example, Cloudflare SEO blog, Cloudflare Community note, BMAD method, and MCP explainer.&#x20;
+
+</PRD>

@@ -1,0 +1,13 @@
+# Task ID: 4
+# Title: Folder-level remap rules config and engine
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Define canonical folder remap rules that preserve leaf slug (e.g., `/portfolio%-items/(.*)` → `/portfolio/%1`). Build application engine.
+# Details:
+- Create `config/folder-rules.json` for declarative patterns.
+- Implement engine to apply rules to old paths and output candidates.
+- Ensure Webflow-compatible escaping for Old path in CSV.
+
+# Test Strategy:
+Unit tests for applying rules; verify examples in PRD and edge cases; snapshot outputs.
